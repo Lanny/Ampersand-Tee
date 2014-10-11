@@ -14,6 +14,17 @@
     }
   }
 
+  function reTrim(charClass, str) {
+    /* Takes a string representing a RegEx character class and a string and
+     * returns the string sans all leading and tailing series of that char
+     * class */
+    var posClass = '[' + charClass + ']*',
+        negClass = '[^' + charClass + ']',
+        regex = new RegExp(posClass + '(' + negClass + '.*'
+                           + negClass + ')' + posClass)
+    return str.match(regex)[1]
+  }
+
   function BBCNode(name, attrs, children) {
     this.name = name
     this.attrs = attrs || {}
@@ -127,7 +138,27 @@
        * it's not then return null and do not advance this.i. If noAdvance is
        * true then this.i will not be advanced even if we parse a tag. */
       var start = this.i,
-          tag = {}
+          tag = {name: null, attrs: {}},
+          attrStart = -1,
+          quoteBalanced = true,
+          i
+
+      var addAttr = function(newAttrStart) {
+        newAttrStart = newAttrStart || this.prevMatch(/[ \n]/, i, true) + 1
+        if (attrStart != -1) {
+          // We were in an attr before, so cap that one off first
+          var kvString = this.text.substr(attrStart, newAttrStart-attrStart),
+              kAndV = kvString.split('='),
+              k, v
+
+          k = reTrim(' \n "', kAndV[0])
+          v = reTrim(' \n "', kAndV.slice(1).join('='))
+
+          tag.attrs[k] = v
+        }
+
+        attrStart = newAttrStart
+      }
 
       if (this.text[start++] != '[')
         return null
@@ -137,7 +168,9 @@
         start++
       }
 
-      for (var i=start; i<this.text.length; i++) {
+
+      for (i=start; i<this.text.length; i++) {
+        // Are we at the end of the tag name?
         if (this.text[i].match(/\W/) && !tag.name) {
           tag.name = this.text.substr(start, i-start)
 
@@ -145,17 +178,47 @@
             return null
         }
 
+        if (this.text[i] == '"')
+          quoteBalanced = !quoteBalanced
+
+        // Are we at the end of a attr value?
+        if (this.text[i] == '=' && quoteBalanced) {
+          addAttr.call(this)
+        }
+
+        // Have we finished the tag?
         if (this.text[i] == ']') {
           if (!noAdvance) this.i = i+1
+
+          // If we were in an attr string and have rached the end of the tag,
+          // we insert in into the tag.attrs object.
+          addAttr.call(this, i)
+
           return tag
         }
       }
 
       return null
-    }
+    },
+    prevMatch: function(regxp, i, qb) {
+      var i = (i === undefined)?this.i:i,
+          qb = (qb === undefined)?false:true,
+          balanced = true
+
+      for (; i>=0; i--) {
+        if (this.text[i] == '"')
+          balanced = !balanced
+
+        if (this.text[i].match(regxp) && balanced)
+          return i
+      }
+
+      return null
+    },
   }
 
   ampt = {
+    _Parser: Parser,
     parse: function(text) {
       return (new Parser(text)).parse()
     }

@@ -18,25 +18,25 @@ test("Tag attribute extraction", function() {
 
   p = new ampt._Parser(sTC1)
   tag = p.nextTag()
-  deepEqual({author: "Lanny", date: "1234"}, tag.attrs,
+  deepEqual(tag.attrs, {author: "Lanny", date: "1234"},
             'sTC1\'s attributes are extracted correctly')
 
   p = new ampt._Parser(sTC2)
   tag = p.nextTag()
-  deepEqual({author: "Lanny Is My Handle", date: "1234"}, tag.attrs,
+  deepEqual(tag.attrs, {author: "Lanny Is My Handle", date: "1234"},
             'attr values with spaces are not split')
 
   p = new ampt._Parser(sTC3)
   tag = p.nextTag()
-  deepEqual({author: "Lanny Is My Handle", date: "1234"}, tag.attrs,
+  deepEqual(tag.attrs, {author: "Lanny Is My Handle", date: "321"},
             'attr values within quotes are not split and are stripped')
 
   p = new ampt._Parser(sTC4)
   tag = p.nextTag()
-  deepEqual({author: "Lanny Is My Handle date=1234", date: "1234"}, tag.attrs,
+  deepEqual(tag.attrs, {author: "Lanny Is My Handle date=123", date: "321"},
             'attr key/value pairs within quotes are not treated as such')
 
   p = new ampt._Parser(sTC5)
   tag = p.nextTag()
-  deepEqual({}, tag.attrs, 'tags with no attrs are handled OK.')
+  deepEqual(tag.attrs, {}, 'tags with no attrs are handled OK.')
 })
