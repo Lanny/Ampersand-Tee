@@ -14,6 +14,7 @@ test("Tag attribute extraction", function() {
       sTC3 = "[quote author=\"Lanny Is My Handle\" date=321]",
       sTC4 = "[quote author=\"Lanny Is My Handle date=123\" date=321]",
       sTC5 = "[quote]",
+      sTC6 = "[url=http://lol.com]",
       tag, p
 
   p = new ampt._Parser(sTC1)
@@ -39,4 +40,9 @@ test("Tag attribute extraction", function() {
   p = new ampt._Parser(sTC5)
   tag = p.nextTag()
   deepEqual(tag.attrs, {}, 'tags with no attrs are handled OK.')
+
+  p = new ampt._Parser(sTC6)
+  tag = p.nextTag()
+  deepEqual(tag.attrs, {url: 'http://lol.com'},
+            'name-as-attribute tags are recognized as such.')
 })
