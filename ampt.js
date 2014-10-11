@@ -156,13 +156,8 @@
   }
 
   ampt = {
-    test: function() {
-      var p = new Parser("hai [quote author=Lanny date=1234]haii[/quote]")
-      //console.log(p.nextTag(true))
-      var tree = p.parse()
-      console.log(tree)
-      console.log(tree.children[1])
-      console.log(tree.toString())
+    parse: function(text) {
+      return (new Parser(text)).parse()
     }
   }
 

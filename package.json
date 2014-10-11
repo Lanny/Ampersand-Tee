@@ -1,0 +1,22 @@
+{
+  "name": "Ampersand-Tee",
+  "version": "0.0.1",
+  "description": "A simple zero dependency and moderately extensible BBCode parser.",
+  "main": "ampt.js",
+  "scripts": {
+    "test": "qunit -c ./ampt.js -t ./tests.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RyanJenkins/Ampersand-Tee.git"
+  },
+  "keywords": [
+    "BBCode"
+  ],
+  "author": "Ryan \"Lanny\" Jenkins",
+  "license": "LGPL",
+  "bugs": {
+    "url": "https://github.com/RyanJenkins/Ampersand-Tee/issues"
+  },
+  "homepage": "https://github.com/RyanJenkins/Ampersand-Tee"
+}
