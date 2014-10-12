@@ -10,7 +10,7 @@
   }
 
   function extend(o1, o2) {
-    // Copies all of the properties on o2 but no o1 onto o1
+    // Copies all of the properties on o2 but not o1 onto o1
     for (attr in o2) {
       if (o1[attr] === undefined)
         o1[attr] = o2[attr]
@@ -25,6 +25,18 @@
         newList.push(list[i])
 
     return newList
+  }
+
+  var escapeChars = ['n', 'r', 't']
+  function repr(s) {
+    var code, ch
+    for (var i=0; i<escapeChars.length; i++) {
+      code = escapeChars[i]
+      ch = eval('"\\' + code + '"')
+      s = s.replace(new RegExp(ch, 'g'), "\\" + code)
+    }
+
+    return s
   }
 
   function reTrim(charClass, str) {
@@ -63,6 +75,15 @@
       s += '[/' + this.name  + ']'
 
       return s
+    },
+    toPrint: function() { return '[' + this.name + ']' },
+    print: function(depth) {
+      depth = depth || 0
+      console.log((new Array(depth*2+1)).join(' ') + this.toPrint())
+
+      for (var i=0; i<this.children.length; i++) {
+        this.children[i].print(depth+1)
+      }
     }
   }
 
@@ -79,7 +100,8 @@
         s += this.children[i].toString()
 
       return s
-    }
+    },
+    toPrint: function() { return this.name }
   }
   extend(RootNode.prototype, BBCNode.prototype)
 
@@ -92,7 +114,8 @@
   }
   TextNode.prototype = {
     toString: function() { return this.text },
-    addChild: function() { throw "Can not add children to text nodes" }
+    addChild: function() { throw "Can not add children to text nodes" },
+    toPrint: function() { return '#text: "' + repr(this.text) + '"' }
   }
   extend(TextNode.prototype, BBCNode.prototype)
 
