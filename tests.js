@@ -29,31 +29,31 @@ test("Tag attribute extraction", function() {
       sTC6 = "[url=http://lol.com]",
       tag, p
 
-  p = new ampt._Parser(sTC1)
+  p = new ampt.Parser(sTC1)
   tag = p.nextTag()
   deepEqual(tag.attrs, {author: "Lanny", date: "1234"},
             'sTC1\'s attributes are extracted correctly')
 
-  p = new ampt._Parser(sTC2)
+  p = new ampt.Parser(sTC2)
   tag = p.nextTag()
   deepEqual(tag.attrs, {author: "Lanny Is My Handle", date: "1234"},
             'attr values with spaces are not split')
 
-  p = new ampt._Parser(sTC3)
+  p = new ampt.Parser(sTC3)
   tag = p.nextTag()
   deepEqual(tag.attrs, {author: "Lanny Is My Handle", date: "321"},
             'attr values within quotes are not split and are stripped')
 
-  p = new ampt._Parser(sTC4)
+  p = new ampt.Parser(sTC4)
   tag = p.nextTag()
   deepEqual(tag.attrs, {author: "Lanny Is My Handle date=123", date: "321"},
             'attr key/value pairs within quotes are not treated as such')
 
-  p = new ampt._Parser(sTC5)
+  p = new ampt.Parser(sTC5)
   tag = p.nextTag()
   deepEqual(tag.attrs, {}, 'tags with no attrs are handled OK.')
 
-  p = new ampt._Parser(sTC6)
+  p = new ampt.Parser(sTC6)
   tag = p.nextTag()
   deepEqual(tag.attrs, {url: 'http://lol.com'},
             'name-as-attribute tags are recognized as such.')
@@ -72,3 +72,26 @@ test("Denesting", function() {
   equal(nestedQuotes.length, 0, 'Quotes are actually de-nested')
 })
 
+
+test("Strict and tag extensions", function() {
+  var sTC1 = "this [foo bar=baz]is a[/foo] test",
+      extendedTags = extend({foo: null}, ampt.bbcTags)
+
+
+  var sParse = (new Parser(sTC1, {strict: true})).parse(),
+      nsParse = (new Parser(sTC1, {strict: false})).parse(),
+      opts = {strict: true, validTags: extendedTags},
+      esParse = (new Parser(sTC1, opts)).parse()
+
+  console.log(sParse)
+  equal(sParse.children.length, 1, "Strict doesn't parse unrecognized tags")
+  equal(nsParse.children.length, 3, "Non-strict does parse unrecognized tags")
+  equal(sParse.children[0].name, '#text', "Strict treats everything as text")
+  equal(nsParse.children[1].name, 'foo',
+        "Non-strict picks up on unrecognized names")
+  equal(nsParse.children[1].attrs.bar, 'baz',
+        "Unrecognized tags get their attrs recognized under non-strict")
+  equal(esParse.children[1].name, 'foo',
+        "Entended parse picks up on new tag names")
+
+})

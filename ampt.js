@@ -97,9 +97,24 @@
   extend(TextNode.prototype, BBCNode.prototype)
 
 
-  function Parser(text) {
+  function Parser(text, options) {
+    /* Create a new parser object initialized with text and options, the
+     * following options are recognized:
+     *
+     * - _validTags_ An object with string keys indicating valid tag names,
+     *   values are ignored. You can use this option to extend the set of tags
+     *   that will be parsed. Defaults to `ampt.bbcTags`.
+     * - _strict_ If false tags don't need to be a mamber of `validTags` to be
+     *   parsed. If true unrecognized tags will be treated as simple text.
+     *   Setting this false can be useful when dealing with unknown pidgins.
+     *   Defaults to true.
+     */
+    options = options || {}
+
     this.i = 0
     this.text = text
+    this.strict = (options.strict===undefined)?true:options.strict
+    this.validTags = options.validTags || bbcTags
   }
   Parser.prototype = {
     parse: function() {
@@ -187,7 +202,7 @@
         if (this.text[i].match(/\W/) && !tag.name) {
           tag.name = this.text.substr(start, i-start)
 
-          if (!(tag.name in bbcTags))
+          if (this.strict && !(tag.name in this.validTags))
             return null
         }
 
@@ -231,7 +246,8 @@
   }
 
   ampt = {
-    _Parser: Parser,
+    Parser: Parser,
+    bbcTags: bbcTags,
     parse: function(text) {
       return (new Parser(text)).parse()
     },
