@@ -1,4 +1,16 @@
-var TC1 = "[quote author=Lanny date=1234]hai[/quote]\n\nhai2u!"
+var TC1 = "[quote author=Lanny date=1234]hai[/quote]\n\nhai2u!",
+  TC2 = "[quote author=RisiR link=topic=3027.msg39139#msg39139 date=1413136943]\n"
+    + "[quote author=helladamnleet date=1413134485]\n"
+    + "What amazing [b]Vogon Poetry - The Worst In the Universe[/b]\n"
+    + "[/quote]\n"
+    + "[quote]Vogon Poetry is by far the worst in the universe. This forum "
+    + "includes all forms of literary creative expression. Please post[b]ONLY "
+    + "your own work[/b] and try not to flame other users. Bad vogonesque "
+    + "poetry, is of course, still welcome here.[/quote]\n"
+    + "This is not my work but a 2500 years old fable by Aesop. \n"
+    + "[/quote]\n\n"
+    + "What are you talking about?"
+
 
 test("Structure validity", function() {
   var t = ampt.parse(TC1)
@@ -46,3 +58,17 @@ test("Tag attribute extraction", function() {
   deepEqual(tag.attrs, {url: 'http://lol.com'},
             'name-as-attribute tags are recognized as such.')
 })
+
+test("Denesting", function() {
+  var t = ampt.parse(TC2)
+  ampt.denestTags(t, 'quote', 1)
+
+  equal(t.children.length, 2,
+        "Denest doesn't change the number of top level elements")
+  equal(t.children[0].name, 'quote', 'Denest doesn\'t remove all quotes.')
+
+  var nestedQuotes = t.children[0].children
+                      .filter(function(x) { return x.name=='quote' })
+  equal(nestedQuotes.length, 0, 'Quotes are actually de-nested')
+})
+

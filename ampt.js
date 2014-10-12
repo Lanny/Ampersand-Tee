@@ -2,8 +2,11 @@
   var bbcTags = {
     'img': null,
     'quote': null,
+    'url': null,
     'i': null,
-    'url': null
+    'u': null,
+    'b': null,
+    's': null
   }
 
   function extend(o1, o2) {
@@ -14,6 +17,16 @@
     }
   }
 
+  function filter(list, f) {
+    var newList = []
+
+    for (var i=0; i<list.length; i++)
+      if (f(list[i]))
+        newList.push(list[i])
+
+    return newList
+  }
+
   function reTrim(charClass, str) {
     /* Takes a string representing a RegEx character class and a string and
      * returns the string sans all leading and tailing series of that char
@@ -22,7 +35,7 @@
         negClass = '[^' + charClass + ']',
         regex = new RegExp(posClass + '(' + negClass + '.*'
                            + negClass + ')' + posClass)
-    return str.match(regex)[1]
+    return (str.match(regex) || {1: null})[1]
   }
 
   function BBCNode(name, attrs, children) {
@@ -221,6 +234,29 @@
     _Parser: Parser,
     parse: function(text) {
       return (new Parser(text)).parse()
+    },
+    denestTags: function(tree, tagname, maxdepth) {
+      maxdepth = maxdepth || 1
+
+      var depth = 0;
+      ;(function next(node) {
+        if (node.name == tagname) 
+          depth++
+
+        if (depth >= maxdepth) {
+            node.children = filter(node.children, function(x) {
+              return x.name != tagname
+            })
+        }
+
+        for (var i=0; i<node.children.length; i++)
+          next(node.children[i])
+
+        if (node.name == tagname) 
+          depth--
+
+      })(tree)
+
     }
   }
 
