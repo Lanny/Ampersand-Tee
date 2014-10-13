@@ -72,6 +72,34 @@ test("Denesting", function() {
   equal(nestedQuotes.length, 0, 'Quotes are actually de-nested')
 })
 
+test("Wonkiness", function() {
+  var sTC1 = "[u][b]squids[/u][/b]",
+      sTC2 = "[u][b]squids [quote]beaches[/u]\n"
+             + "[quote]cacti[/quote][/quote][/u][/b]",
+      sTC3 = "[u]Wrong without harm"
+  t = ampt.parse(sTC1)
+  t.print()
+  equal(t.children[0].name, 'u', 'sTC1 get underlined')
+  equal(t.children[0].children[0].name, 'b', 'sTC1 get bolded')
+  
+  var nonTextChildren = t.children[0].children[0].children
+                         .filter(function(x) { return x.name != '#text' }),
+      lastChild = t.children[0].children[0].children[1]
+  equal(nonTextChildren.length, 0, 'Orphan closers don\'t become nodes')
+  equal(lastChild.text, '[/u]', 'Orphan closers are treated as text.')
+
+  t = ampt.parse(sTC2)
+  // Don't even know what I want to test with this one
+
+  t = ampt.parse(sTC3)
+  equal(t.children.length, 1, 'sTC3 produces one child')
+  equal(t.children[0].name, 'u', 'sTC3 produces an underline node')
+  equal(t.children[0].children[0].name, '#text',
+        'sTC3 produces underlined text')
+  equal(t.children[0].children.length, 1,
+        'sTC3\'s underline node has only one child')
+})
+
 
 test("Strict and tag extensions", function() {
   var sTC1 = "this [foo bar=baz]is a[/foo] test",
@@ -83,7 +111,6 @@ test("Strict and tag extensions", function() {
       opts = {strict: true, validTags: extendedTags},
       esParse = (new Parser(sTC1, opts)).parse()
 
-  console.log(sParse)
   equal(sParse.children.length, 1, "Strict doesn't parse unrecognized tags")
   equal(nsParse.children.length, 3, "Non-strict does parse unrecognized tags")
   equal(sParse.children[0].name, '#text', "Strict treats everything as text")

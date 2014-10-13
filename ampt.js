@@ -150,16 +150,25 @@
       return root
     },
     parseNode: function() {
-      var tag = this.nextTag()
+      var tag = this.nextTag(true),
+        node
+
+      if (tag && tag.closer) {
+        // Definitely an error state
+        return this.parseText()
+      }
+
       if (tag) {
-        return this.parseBBCTag(tag)
+        return this.parseBBCTag()
       } else {
+        // Not really necessary since this call will never recurse
         return this.parseText()
       }
     },
-    parseBBCTag: function(openTag) {
-      var node = new BBCNode(openTag.name, openTag.attrs),
-        possibleCloser
+    parseBBCTag: function() {
+      var openTag = this.nextTag(),
+          node = new BBCNode(openTag.name, openTag.attrs),
+          possibleCloser
 
       while (this.i < this.text.length) {
         possibleCloser = this.nextTag(true)
@@ -178,7 +187,7 @@
     parseText: function() {
       var start = this.i
 
-      for (; this.i<this.text.length; this.i++) {
+      for (this.i++; this.i<this.text.length; this.i++) {
         if (this.nextTag(true)) break
       }
       return new TextNode(this.text.substr(start, this.i-start))
